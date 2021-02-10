@@ -9,3 +9,4 @@ stages:
 .deploy:
   variables:
     STACK: testing
+    url: https://selenium.${PUBLIC_HOSTNAME}

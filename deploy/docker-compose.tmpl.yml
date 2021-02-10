@@ -11,6 +11,7 @@ services:
       SE_OPTS: ${SELENIUM_HUB_SE_OPTS}
     networks:
       gitlab-net:
+      traefik-net:
     deploy:
       mode: replicated
       replicas: ${SELENIUM_HUB_REPLICAS:-1}
@@ -18,13 +19,17 @@ services:
         delay: ${SELENIUM_HUB_RESTART_DELAY:-5s}
       update_config:
         delay: ${SELENIUM_HUB_UPDATE_DELAY:-1m}
+      labels:
+        traefik.frontend.rule: Host:${TRAEFIK_SUBDOMAIN:-selenium}.${PUBLIC_HOSTNAME}
+        traefik.backend: selenium-hub
+        traefik.port: '${SE_HUB_HOST}'
       resources:
         limits:
-          cpus: '${SELENIUM_HUB_RESOURCES_LIMITS_CPUS:-1}'
-          memory: ${SELENIUM_HUB_RESOURCES_LIMITS_MEMORY:-512M}
+          cpus: '${SELENIUM_HUB_RESOURCES_LIMITS_CPUS:-0.5}'
+          memory: ${SELENIUM_HUB_RESOURCES_LIMITS_MEMORY:-256M}
         reservations:
           cpus: '${SELENIUM_HUB_RESOURCES_RESERVATIONS_CPUS:-0.001}'
-          memory: ${SELENIUM_HUB_RESOURCES_RESERVATIONS_MEMORY:-256M}
+          memory: ${SELENIUM_HUB_RESOURCES_RESERVATIONS_MEMORY:-128M}
 
   selenium-chrome:
     image: ${SELENIUM_CHROME_IMAGE_NAME:-selenium/node-chrome}:${SELENIUM_CHROME_IMAGE_TAG:-latest}
@@ -52,7 +57,7 @@ services:
           memory: ${SELENIUM_CHROME_RESOURCES_LIMITS_MEMORY:-512M}
         reservations:
           cpus: '${SELENIUM_CHROME_RESOURCES_RESERVATIONS_CPUS:-0.001}'
-          memory: ${SELENIUM_CHROME_RESOURCES_RESERVATIONS_MEMORY:-256M}
+          memory: ${SELENIUM_CHROME_RESOURCES_RESERVATIONS_MEMORY:-128M}
 
   selenium-firefox:
     image: ${SELENIUM_FIREFOX_IMAGE_NAME:-selenium/node-firefox}:${SELENIUM_FIREFOX_IMAGE_TAG:-latest}
@@ -77,7 +82,7 @@ services:
       resources:
         limits:
           cpus: '${SELENIUM_FIREFOX_RESOURCES_LIMITS_CPUS:-0.5}'
-          memory: ${SELENIUM_FIREFOX_RESOURCES_LIMITS_MEMORY:-512M}
+          memory: ${SELENIUM_FIREFOX_RESOURCES_LIMITS_MEMORY:-128M}
         reservations:
           cpus: '${SELENIUM_FIREFOX_RESOURCES_RESERVATIONS_CPUS:-0.001}'
           memory: ${SELENIUM_FIREFOX_RESOURCES_RESERVATIONS_MEMORY:-256M}
@@ -86,4 +91,9 @@ networks:
   gitlab-net:
     name: ${GITLAB_NET_NAME:-gitlab-net}
     driver: ${GITLAB_NET_DRIVER:-overlay}
+    external: true
+
+  traefik-net:
+    name: ${TRAEFIK_NET_NAME:-traefik-net}
+    driver: ${TRAEFIK_NET_DRIVER:-overlay}
     external: true
