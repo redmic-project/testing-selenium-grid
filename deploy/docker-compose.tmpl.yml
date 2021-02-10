@@ -1,0 +1,89 @@
+version: '3.5'
+
+services:
+  selenium-hub:
+    image: ${SELENIUM_HUB_IMAGE_NAME:-selenium/hub}:${SELENIUM_HUB_IMAGE_TAG:-latest}
+    environment:
+      SE_HUB_HOST:
+      SE_HUB_PORT:
+      SE_SESSION_REQUEST_TIMEOUT:
+      SE_SESSION_RETRY_INTERVAL:
+      SE_OPTS: ${SELENIUM_HUB_SE_OPTS}
+    networks:
+      gitlab-net:
+    deploy:
+      mode: replicated
+      replicas: ${SELENIUM_HUB_REPLICAS:-1}
+      restart_policy:
+        delay: ${SELENIUM_HUB_RESTART_DELAY:-5s}
+      update_config:
+        delay: ${SELENIUM_HUB_UPDATE_DELAY:-1m}
+      resources:
+        limits:
+          cpus: '${SELENIUM_HUB_RESOURCES_LIMITS_CPUS:-1}'
+          memory: ${SELENIUM_HUB_RESOURCES_LIMITS_MEMORY:-512M}
+        reservations:
+          cpus: '${SELENIUM_HUB_RESOURCES_RESERVATIONS_CPUS:-0.001}'
+          memory: ${SELENIUM_HUB_RESOURCES_RESERVATIONS_MEMORY:-256M}
+
+  selenium-chrome:
+    image: ${SELENIUM_CHROME_IMAGE_NAME:-selenium/node-chrome}:${SELENIUM_CHROME_IMAGE_TAG:-latest}
+    environment:
+      SE_EVENT_BUS_HOST: ${SE_HUB_HOST}
+      SE_EVENT_BUS_PUBLISH_PORT:
+      SE_EVENT_BUS_SUBSCRIBE_PORT:
+      SE_NODE_HOST: {{.Service.Name}}
+      SE_NODE_MAX_CONCURRENT_SESSIONS:
+      SE_OPTS: ${SELENIUM_CHROME_SE_OPTS}
+    networks:
+      gitlab-net:
+    volumes:
+      - /dev/shm:/dev/shm
+    deploy:
+      mode: replicated
+      replicas: ${SELENIUM_CHROME_REPLICAS:-1}
+      restart_policy:
+        delay: ${SELENIUM_CHROME_RESTART_DELAY:-10s}
+      update_config:
+        delay: ${SELENIUM_CHROME_UPDATE_DELAY:-1m}
+      resources:
+        limits:
+          cpus: '${SELENIUM_CHROME_RESOURCES_LIMITS_CPUS:-0.5}'
+          memory: ${SELENIUM_CHROME_RESOURCES_LIMITS_MEMORY:-512M}
+        reservations:
+          cpus: '${SELENIUM_CHROME_RESOURCES_RESERVATIONS_CPUS:-0.001}'
+          memory: ${SELENIUM_CHROME_RESOURCES_RESERVATIONS_MEMORY:-256M}
+
+  selenium-firefox:
+    image: ${SELENIUM_FIREFOX_IMAGE_NAME:-selenium/node-firefox}:${SELENIUM_FIREFOX_IMAGE_TAG:-latest}
+    environment:
+      SE_EVENT_BUS_HOST: ${SE_HUB_HOST}
+      SE_EVENT_BUS_PUBLISH_PORT:
+      SE_EVENT_BUS_SUBSCRIBE_PORT:
+      SE_NODE_HOST: {{.Service.Name}}
+      SE_NODE_MAX_CONCURRENT_SESSIONS:
+      SE_OPTS: ${SELENIUM_FIREFOX_SE_OPTS}
+    networks:
+      gitlab-net:
+    volumes:
+      - /dev/shm:/dev/shm
+    deploy:
+      mode: replicated
+      replicas: ${SELENIUM_FIREFOX_REPLICAS:-1}
+      restart_policy:
+        delay: ${SELENIUM_FIREFOX_RESTART_DELAY:-10s}
+      update_config:
+        delay: ${SELENIUM_FIREFOX_UPDATE_DELAY:-1m}
+      resources:
+        limits:
+          cpus: '${SELENIUM_FIREFOX_RESOURCES_LIMITS_CPUS:-0.5}'
+          memory: ${SELENIUM_FIREFOX_RESOURCES_LIMITS_MEMORY:-512M}
+        reservations:
+          cpus: '${SELENIUM_FIREFOX_RESOURCES_RESERVATIONS_CPUS:-0.001}'
+          memory: ${SELENIUM_FIREFOX_RESOURCES_RESERVATIONS_MEMORY:-256M}
+
+networks:
+  gitlab-net:
+    name: ${GITLAB_NET_NAME:-gitlab-net}
+    driver: ${GITLAB_NET_DRIVER:-overlay}
+    external: true
