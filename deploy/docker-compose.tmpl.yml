@@ -22,7 +22,7 @@ services:
       labels:
         traefik.frontend.rule: Host:${TRAEFIK_SUBDOMAIN:-selenium}.${PUBLIC_HOSTNAME}
         traefik.backend: selenium-hub
-        traefik.port: '${SE_HUB_HOST}'
+        traefik.port: '${SE_HUB_PORT}'
       resources:
         limits:
           cpus: '${SELENIUM_HUB_RESOURCES_LIMITS_CPUS:-0.5}'
