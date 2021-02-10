@@ -20,6 +20,7 @@ services:
       update_config:
         delay: ${SELENIUM_HUB_UPDATE_DELAY:-1m}
       labels:
+        traefik.frontend.auth.basic.users: ${UI_AUTH}
         traefik.frontend.rule: Host:${TRAEFIK_SUBDOMAIN:-selenium}.${PUBLIC_HOSTNAME}
         traefik.backend: selenium-hub
         traefik.port: '${SE_HUB_PORT}'
