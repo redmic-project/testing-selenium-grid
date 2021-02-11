@@ -27,10 +27,10 @@ services:
       resources:
         limits:
           cpus: '${SELENIUM_HUB_RESOURCES_LIMITS_CPUS:-0.5}'
-          memory: ${SELENIUM_HUB_RESOURCES_LIMITS_MEMORY:-256M}
+          memory: ${SELENIUM_HUB_RESOURCES_LIMITS_MEMORY:-512M}
         reservations:
           cpus: '${SELENIUM_HUB_RESOURCES_RESERVATIONS_CPUS:-0.001}'
-          memory: ${SELENIUM_HUB_RESOURCES_RESERVATIONS_MEMORY:-128M}
+          memory: ${SELENIUM_HUB_RESOURCES_RESERVATIONS_MEMORY:-256M}
 
   selenium-chrome:
     image: ${SELENIUM_CHROME_IMAGE_NAME:-selenium/node-chrome}:${SELENIUM_CHROME_IMAGE_TAG:-latest}
@@ -55,10 +55,10 @@ services:
       resources:
         limits:
           cpus: '${SELENIUM_CHROME_RESOURCES_LIMITS_CPUS:-0.5}'
-          memory: ${SELENIUM_CHROME_RESOURCES_LIMITS_MEMORY:-512M}
+          memory: ${SELENIUM_CHROME_RESOURCES_LIMITS_MEMORY:-1G}
         reservations:
           cpus: '${SELENIUM_CHROME_RESOURCES_RESERVATIONS_CPUS:-0.001}'
-          memory: ${SELENIUM_CHROME_RESOURCES_RESERVATIONS_MEMORY:-128M}
+          memory: ${SELENIUM_CHROME_RESOURCES_RESERVATIONS_MEMORY:-512M}
 
   selenium-firefox:
     image: ${SELENIUM_FIREFOX_IMAGE_NAME:-selenium/node-firefox}:${SELENIUM_FIREFOX_IMAGE_TAG:-latest}
@@ -83,10 +83,10 @@ services:
       resources:
         limits:
           cpus: '${SELENIUM_FIREFOX_RESOURCES_LIMITS_CPUS:-0.5}'
-          memory: ${SELENIUM_FIREFOX_RESOURCES_LIMITS_MEMORY:-128M}
+          memory: ${SELENIUM_FIREFOX_RESOURCES_LIMITS_MEMORY:-1G}
         reservations:
           cpus: '${SELENIUM_FIREFOX_RESOURCES_RESERVATIONS_CPUS:-0.001}'
-          memory: ${SELENIUM_FIREFOX_RESOURCES_RESERVATIONS_MEMORY:-256M}
+          memory: ${SELENIUM_FIREFOX_RESOURCES_RESERVATIONS_MEMORY:-512M}
 
 networks:
   gitlab-net:
