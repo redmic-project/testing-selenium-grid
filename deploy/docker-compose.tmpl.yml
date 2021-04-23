@@ -4,7 +4,6 @@ x-selenium-node-environment: &selenium-node-environment
   SE_EVENT_BUS_HOST: ${SE_HUB_HOST}
   SE_EVENT_BUS_PUBLISH_PORT:
   SE_EVENT_BUS_SUBSCRIBE_PORT:
-  SE_NODE_HOST: '{{.Service.Name}}'
 
 x-selenium-node-commons: &selenium-node-commons
   networks:
