@@ -12,6 +12,12 @@ services:
     networks:
       gitlab-net:
       traefik-net:
+    healthcheck:
+      test: /opt/bin/check-grid.sh --host ${SE_HUB_HOST} --port ${SE_HUB_PORT}
+      interval: ${HEALTHCHECK_INTERVAL:-30s}
+      timeout: ${HEALTHCHECK_TIMEOUT:-15s}
+      retries: ${HEALTHCHECK_RETRIES:-5}
+      start_period: ${HEALTHCHECK_START_PERIOD:-1m}
     deploy:
       mode: replicated
       replicas: ${SELENIUM_HUB_REPLICAS:-1}
@@ -27,7 +33,7 @@ services:
       resources:
         limits:
           cpus: '${SELENIUM_HUB_RESOURCES_LIMITS_CPUS:-0.5}'
-          memory: ${SELENIUM_HUB_RESOURCES_LIMITS_MEMORY:-512M}
+          memory: ${SELENIUM_HUB_RESOURCES_LIMITS_MEMORY:-1G}
         reservations:
           cpus: '${SELENIUM_HUB_RESOURCES_RESERVATIONS_CPUS:-0.001}'
           memory: ${SELENIUM_HUB_RESOURCES_RESERVATIONS_MEMORY:-256M}
