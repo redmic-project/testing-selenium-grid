@@ -8,6 +8,7 @@ x-selenium-node-environment: &selenium-node-environment
 x-selenium-node-commons: &selenium-node-commons
   networks:
     selenium-net:
+    gitlab-net:
   volumes:
     - /dev/shm:/dev/shm
   healthcheck:
