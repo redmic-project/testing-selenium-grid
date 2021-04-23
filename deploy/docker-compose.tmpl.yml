@@ -13,7 +13,7 @@ services:
       gitlab-net:
       traefik-net:
     healthcheck:
-      test: /opt/bin/check-grid.sh --host ${SE_HUB_HOST} --port ${SE_HUB_PORT}
+      test: curl -sSL http://localhost:${SE_HUB_PORT}/wd/hub/status
       interval: ${HEALTHCHECK_INTERVAL:-30s}
       timeout: ${HEALTHCHECK_TIMEOUT:-15s}
       retries: ${HEALTHCHECK_RETRIES:-5}
