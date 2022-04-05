@@ -1,10 +1,14 @@
-version: '3.5'
+version: '3.9'
 
 x-selenium-node-commons: &selenium-node-commons
-  shm_size: ${SELENIUM_NODE_SHARED_MEMORY}
   networks:
     selenium-net:
     gitlab-net:
+  volumes:
+    - type: tmpfs
+      target: /dev/shm
+      tmpfs:
+        size: '${SELENIUM_NODE_SHARED_MEMORY}'
   healthcheck:
     test: curl -sSL http://localhost:5555/status
     interval: ${SELENIUM_NODE_HEALTHCHECK_INTERVAL:-30s}
