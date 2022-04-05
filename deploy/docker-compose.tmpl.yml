@@ -8,7 +8,7 @@ x-selenium-node-commons: &selenium-node-commons
     - type: tmpfs
       target: /dev/shm
       tmpfs:
-        size: ${SELENIUM_NODE_SHARED_MEMORY}
+        size: 2000000000
   healthcheck:
     test: curl -sSL http://localhost:5555/status
     interval: ${SELENIUM_NODE_HEALTHCHECK_INTERVAL:-30s}
