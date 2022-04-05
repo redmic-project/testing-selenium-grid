@@ -1,16 +1,14 @@
-version: '3.5'
-
-x-selenium-node-environment: &selenium-node-environment
-  SE_EVENT_BUS_HOST: ${SE_HUB_HOST}
-  SE_EVENT_BUS_PUBLISH_PORT:
-  SE_EVENT_BUS_SUBSCRIBE_PORT:
+version: '3.9'
 
 x-selenium-node-commons: &selenium-node-commons
   networks:
     selenium-net:
     gitlab-net:
   volumes:
-    - /dev/shm:/dev/shm
+    - type: tmpfs
+      target: /dev/shm
+      tmpfs:
+        size: 2000000000
   healthcheck:
     test: curl -sSL http://localhost:5555/status
     interval: ${SELENIUM_NODE_HEALTHCHECK_INTERVAL:-30s}
@@ -18,19 +16,42 @@ x-selenium-node-commons: &selenium-node-commons
     retries: ${SELENIUM_NODE_HEALTHCHECK_RETRIES:-5}
     start_period: ${SELENIUM_NODE_HEALTHCHECK_START_PERIOD:-1m}
 
+x-selenium-node-environment: &selenium-node-environment
+  SE_EVENT_BUS_HOST: ${SE_HUB_HOST}
+  SE_EVENT_BUS_PUBLISH_PORT:
+  SE_EVENT_BUS_SUBSCRIBE_PORT:
+  SE_NODE_GRID_URL: http://${SE_HUB_HOST}:${SE_HUB_PORT}
+  SE_NODE_SESSION_TIMEOUT:
+  SE_NODE_OVERRIDE_MAX_SESSIONS:
+  SCREEN_WIDTH:
+  SCREEN_HEIGHT:
+  SCREEN_DEPTH:
+  SCREEN_DPI:
+  START_XVFB:
+  VNC_NO_PASSWORD:
+  VNC_VIEW_ONLY:
+  JAVA_OPTS: ${SELENIUM_NODE_JAVA_OPTS}
+
+x-selenium-node-deploy: &selenium-node-deploy
+  mode: replicated
+  restart_policy:
+    delay: ${SELENIUM_NODE_RESTART_DELAY:-10s}
+  update_config:
+    delay: ${SELENIUM_NODE_UPDATE_DELAY:-1m}
+
 services:
   selenium-hub:
     image: ${SELENIUM_HUB_IMAGE_NAME:-selenium/hub}:${SELENIUM_HUB_IMAGE_TAG:-latest}
+    hostname: ${SE_HUB_HOST}
     environment:
       SE_HUB_HOST:
       SE_HUB_PORT:
       SE_SESSION_REQUEST_TIMEOUT:
       SE_SESSION_RETRY_INTERVAL:
       SE_OPTS: ${SELENIUM_HUB_SE_OPTS}
+      JAVA_OPTS: ${SELENIUM_HUB_JAVA_OPTS}
     networks:
       selenium-net:
-        aliases:
-          - ${SE_HUB_HOST}
       gitlab-net:
       traefik-net:
     healthcheck:
@@ -41,7 +62,7 @@ services:
       start_period: ${SELENIUM_HUB_HEALTHCHECK_START_PERIOD:-1m}
     deploy:
       mode: replicated
-      replicas: ${SELENIUM_HUB_REPLICAS:-1}
+      replicas: 1
       restart_policy:
         delay: ${SELENIUM_HUB_RESTART_DELAY:-5s}
       update_config:
@@ -61,18 +82,16 @@ services:
 
   selenium-chrome:
     image: ${SELENIUM_CHROME_IMAGE_NAME:-selenium/node-chrome}:${SELENIUM_CHROME_IMAGE_TAG:-latest}
+    hostname: chrome-{{.Task.Slot}}
     environment:
       << : *selenium-node-environment
-      SE_NODE_MAX_CONCURRENT_SESSIONS: ${SELENIUM_CHROME_MAX_CONCURRENT_SESSIONS:-1}
+      SE_NODE_HOST: chrome-{{.Task.Slot}}
+      SE_NODE_MAX_SESSIONS: ${SELENIUM_CHROME_NODE_MAX_SESSIONS:-1}
       SE_OPTS: ${SELENIUM_CHROME_SE_OPTS}
     << : *selenium-node-commons
     deploy:
-      mode: replicated
+      << : *selenium-node-deploy
       replicas: ${SELENIUM_CHROME_REPLICAS:-1}
-      restart_policy:
-        delay: ${SELENIUM_CHROME_RESTART_DELAY:-10s}
-      update_config:
-        delay: ${SELENIUM_CHROME_UPDATE_DELAY:-1m}
       resources:
         limits:
           cpus: '${SELENIUM_CHROME_RESOURCES_LIMITS_CPUS:-0.5}'
@@ -83,18 +102,16 @@ services:
 
   selenium-firefox:
     image: ${SELENIUM_FIREFOX_IMAGE_NAME:-selenium/node-firefox}:${SELENIUM_FIREFOX_IMAGE_TAG:-latest}
+    hostname: firefox-{{.Task.Slot}}
     environment:
       << : *selenium-node-environment
-      SE_NODE_MAX_CONCURRENT_SESSIONS: ${SELENIUM_FIREFOX_MAX_CONCURRENT_SESSIONS:-1}
+      SE_NODE_HOST: firefox-{{.Task.Slot}}
+      SE_NODE_MAX_SESSIONS: ${SELENIUM_FIREFOX_NODE_MAX_SESSIONS:-1}
       SE_OPTS: ${SELENIUM_FIREFOX_SE_OPTS}
     << : *selenium-node-commons
     deploy:
-      mode: replicated
+      << : *selenium-node-deploy
       replicas: ${SELENIUM_FIREFOX_REPLICAS:-1}
-      restart_policy:
-        delay: ${SELENIUM_FIREFOX_RESTART_DELAY:-10s}
-      update_config:
-        delay: ${SELENIUM_FIREFOX_UPDATE_DELAY:-1m}
       resources:
         limits:
           cpus: '${SELENIUM_FIREFOX_RESOURCES_LIMITS_CPUS:-0.5}'
