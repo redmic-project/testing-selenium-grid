@@ -1,72 +1,33 @@
 version: '3.9'
 
-x-selenium-node-commons: &selenium-node-commons
-  networks:
-    selenium-net:
-    gitlab-net:
-  volumes:
-    - type: tmpfs
-      target: /dev/shm
-      tmpfs:
-        size: 2000000000
-  healthcheck:
-    test: curl -sSL http://localhost:5555/status
-    interval: ${SELENIUM_NODE_HEALTHCHECK_INTERVAL:-30s}
-    timeout: ${SELENIUM_NODE_HEALTHCHECK_TIMEOUT:-15s}
-    retries: ${SELENIUM_NODE_HEALTHCHECK_RETRIES:-5}
-    start_period: ${SELENIUM_NODE_HEALTHCHECK_START_PERIOD:-1m}
-
-x-selenium-node-environment: &selenium-node-environment
-  SE_EVENT_BUS_HOST: ${SE_HUB_HOST}
-  SE_EVENT_BUS_PUBLISH_PORT:
-  SE_EVENT_BUS_SUBSCRIBE_PORT:
-  SE_NODE_GRID_URL: http://${SE_HUB_HOST}:${SE_HUB_PORT}
-  SE_NODE_SESSION_TIMEOUT:
-  SE_NODE_OVERRIDE_MAX_SESSIONS:
-  SCREEN_WIDTH:
-  SCREEN_HEIGHT:
-  SCREEN_DEPTH:
-  SCREEN_DPI:
-  START_XVFB:
-  VNC_NO_PASSWORD:
-  VNC_VIEW_ONLY:
-  JAVA_OPTS: ${SELENIUM_NODE_JAVA_OPTS}
-
-x-selenium-node-deploy: &selenium-node-deploy
-  mode: replicated
-  restart_policy:
-    delay: ${SELENIUM_NODE_RESTART_DELAY:-10s}
-  update_config:
-    delay: ${SELENIUM_NODE_UPDATE_DELAY:-1m}
-
 services:
   selenium-hub:
-    image: ${SELENIUM_HUB_IMAGE_NAME:-selenium/hub}:${SELENIUM_HUB_IMAGE_TAG:-latest}
+    image: ${IMAGE_NAME:-selenium/hub}:${IMAGE_TAG:-latest}
     hostname: ${SE_HUB_HOST}
     environment:
       SE_HUB_HOST:
       SE_HUB_PORT:
       SE_SESSION_REQUEST_TIMEOUT:
       SE_SESSION_RETRY_INTERVAL:
-      SE_OPTS: ${SELENIUM_HUB_SE_OPTS}
-      JAVA_OPTS: ${SELENIUM_HUB_JAVA_OPTS}
+      SE_OPTS:
+      JAVA_OPTS:
     networks:
       selenium-net:
       gitlab-net:
       traefik-net:
     healthcheck:
       test: curl -sSL http://localhost:${SE_HUB_PORT}/wd/hub/status
-      interval: ${SELENIUM_HUB_HEALTHCHECK_INTERVAL:-30s}
-      timeout: ${SELENIUM_HUB_HEALTHCHECK_TIMEOUT:-15s}
-      retries: ${SELENIUM_HUB_HEALTHCHECK_RETRIES:-5}
-      start_period: ${SELENIUM_HUB_HEALTHCHECK_START_PERIOD:-1m}
+      interval: ${HEALTHCHECK_INTERVAL:-30s}
+      timeout: ${HEALTHCHECK_TIMEOUT:-15s}
+      retries: ${HEALTHCHECK_RETRIES:-5}
+      start_period: ${HEALTHCHECK_START_PERIOD:-1m}
     deploy:
       mode: replicated
       replicas: 1
       restart_policy:
-        delay: ${SELENIUM_HUB_RESTART_DELAY:-5s}
+        delay: ${RESTART_DELAY:-5s}
       update_config:
-        delay: ${SELENIUM_HUB_UPDATE_DELAY:-1m}
+        delay: ${UPDATE_DELAY:-1m}
       labels:
         traefik.frontend.auth.basic.users: ${UI_AUTH}
         traefik.frontend.rule: Host:${TRAEFIK_SUBDOMAIN:-selenium}.${PUBLIC_HOSTNAME}
@@ -74,51 +35,11 @@ services:
         traefik.port: '${SE_HUB_PORT}'
       resources:
         limits:
-          cpus: '${SELENIUM_HUB_RESOURCES_LIMITS_CPUS:-0.5}'
-          memory: ${SELENIUM_HUB_RESOURCES_LIMITS_MEMORY:-1G}
+          cpus: '${RESOURCES_LIMITS_CPUS:-0.5}'
+          memory: ${RESOURCES_LIMITS_MEMORY:-1G}
         reservations:
-          cpus: '${SELENIUM_HUB_RESOURCES_RESERVATIONS_CPUS:-0.001}'
-          memory: ${SELENIUM_HUB_RESOURCES_RESERVATIONS_MEMORY:-256M}
-
-  selenium-chrome:
-    image: ${SELENIUM_CHROME_IMAGE_NAME:-selenium/node-chrome}:${SELENIUM_CHROME_IMAGE_TAG:-latest}
-    hostname: chrome-{{.Task.Slot}}
-    environment:
-      << : *selenium-node-environment
-      SE_NODE_HOST: chrome-{{.Task.Slot}}
-      SE_NODE_MAX_SESSIONS: ${SELENIUM_CHROME_NODE_MAX_SESSIONS:-1}
-      SE_OPTS: ${SELENIUM_CHROME_SE_OPTS}
-    << : *selenium-node-commons
-    deploy:
-      << : *selenium-node-deploy
-      replicas: ${SELENIUM_CHROME_REPLICAS:-1}
-      resources:
-        limits:
-          cpus: '${SELENIUM_CHROME_RESOURCES_LIMITS_CPUS:-0.5}'
-          memory: ${SELENIUM_CHROME_RESOURCES_LIMITS_MEMORY:-1G}
-        reservations:
-          cpus: '${SELENIUM_CHROME_RESOURCES_RESERVATIONS_CPUS:-0.001}'
-          memory: ${SELENIUM_CHROME_RESOURCES_RESERVATIONS_MEMORY:-512M}
-
-  selenium-firefox:
-    image: ${SELENIUM_FIREFOX_IMAGE_NAME:-selenium/node-firefox}:${SELENIUM_FIREFOX_IMAGE_TAG:-latest}
-    hostname: firefox-{{.Task.Slot}}
-    environment:
-      << : *selenium-node-environment
-      SE_NODE_HOST: firefox-{{.Task.Slot}}
-      SE_NODE_MAX_SESSIONS: ${SELENIUM_FIREFOX_NODE_MAX_SESSIONS:-1}
-      SE_OPTS: ${SELENIUM_FIREFOX_SE_OPTS}
-    << : *selenium-node-commons
-    deploy:
-      << : *selenium-node-deploy
-      replicas: ${SELENIUM_FIREFOX_REPLICAS:-1}
-      resources:
-        limits:
-          cpus: '${SELENIUM_FIREFOX_RESOURCES_LIMITS_CPUS:-0.5}'
-          memory: ${SELENIUM_FIREFOX_RESOURCES_LIMITS_MEMORY:-1G}
-        reservations:
-          cpus: '${SELENIUM_FIREFOX_RESOURCES_RESERVATIONS_CPUS:-0.001}'
-          memory: ${SELENIUM_FIREFOX_RESOURCES_RESERVATIONS_MEMORY:-512M}
+          cpus: '${RESOURCES_RESERVATIONS_CPUS:-0.001}'
+          memory: ${RESOURCES_RESERVATIONS_MEMORY:-256M}
 
 networks:
   selenium-net:
