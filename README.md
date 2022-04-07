@@ -1,4 +1,4 @@
-# Selenium Grid
+# Selenium Hub
 
 Remote system for running distributed tests in multiple environments
 
