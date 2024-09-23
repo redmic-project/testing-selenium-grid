@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   selenium-hub:
     image: ${IMAGE_NAME:-selenium/hub}:${IMAGE_TAG:-latest}
@@ -29,7 +27,7 @@ services:
       update_config:
         delay: ${UPDATE_DELAY:-1m}
       labels:
-        traefik.enable: 'true'
+        traefik.enable: ${TRAEFIK_ENABLE:-true}
         traefik.http.routers.selenium-hub.entrypoints: ${TRAEFIK_ENTRYPOINT:-http}
         traefik.http.routers.selenium-hub.rule: Host(`${TRAEFIK_SUBDOMAIN:-selenium}.${PUBLIC_HOSTNAME}`)
         traefik.http.middlewares.selenium-hub-auth.basicauth.users: ${TRAEFIK_AUTH}
